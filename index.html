@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Pixel Interface Test</title>
+  
+  <style>
+    /* Import modern pixel and tech fonts from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Silkscreen&display=swap');
+
+    /* ==========================================================================
+       1. General Styles & Animations
+       ========================================================================== */
+    @keyframes scanline {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+
+    @keyframes crt-flicker {
+        0% { opacity: 0.98; }
+        50% { opacity: 1; }
+        100% { opacity: 0.99; }
+    }
+
+    body {
+        font-family: 'Silkscreen', 'Share Tech Mono', 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        color: #fff;
+        overflow: hidden; /* Keeps the application feeling self-contained */
+        
+        /* Tech matrix grid background */
+        background-color: #0a0a0c; 
+        background-image: 
+            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+            linear-gradient(90deg, rgba(98, 42, 80, 0.05), rgba(0, 255, 204, 0.02), rgba(98, 42, 80, 0.05));
+        background-size: 100% 4px, 6px 100%;
+        animation: crt-flicker 0.15s infinite;
+        
+        /* Forcing crisp pixel text rendering */
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: none;
+        text-rendering: crispEdges;
+    }
+
+    /* Moving overlay scanline for a terminal screen feel */
+    body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 0%, rgba(0, 0, 0, 0.1) 10%, rgba(18, 16, 16, 0) 20%);
+        background-size: 100% 100%;
+        z-index: 9999;
+        pointer-events: none;
+        animation: scanline 8s linear infinite;
+    }
+
+    /* ==========================================================================
+       2. Advanced Blast Gate System (Overlay)
+       ========================================================================== */
+    #gate-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000;
+        pointer-events: none;
+        display: flex;
+    }
+
+    .gate-half {
+        width: 50vw;
+        height: 100vh;
+        background-color: #121216;
+        box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85), inset 0 0 30px rgba(98, 42, 80, 0.3);
+        border: 4px solid #622A50;
+        box-sizing: border-box;
+        position: relative;
+        /* cubic-bezier creates heavy mechanical bounce back effect */
+        transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    /* Interlocking diagonal layout using clip-paths */
+    .left-gate {
+        transform: translateX(-100%);
+        border-right: 3px solid #bc3a80;
+        clip-path: polygon(0% 0%, 100% 0%, 100% 40%, 95% 50%, 100% 60%, 100% 100%, 0% 100%);
+    }
+
+    .right-gate {
+        transform: translateX(100%);
+        border-left: 3px solid #bc3a80;
+        clip-path: polygon(5% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 60%, 5% 50%, 0% 40%, 0% 0%);
+        left: -5vw; 
+        width: 55vw; 
+    }
+
+    .status-light {
+        position: absolute;
+        top: 30px;
+        right: 40px;
+        width: 12px;
+        height: 12px;
+        background: #4ade80;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #4ade80;
+    }
+
+    .gate-crack {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 100vh;
+        background: transparent;
+        z-index: 10001;
+        pointer-events: none;
+    }
+
+    /* Gate states */
+    #gate-container.gate-shut { pointer-events: all; }
+    #gate-container.gate-shut .left-gate,
+    #gate-container.gate-shut .right-gate { transform: translateX(0); }
+    #gate-container.gate-shut .status-light {
+        background: #f43f5e;
+        box-shadow: 0 0 15px #f43f5e;
+        animation: crt-flicker 0.1s infinite;
+    }
+
+    @keyframes structuralFracture {
+        0% { background: transparent; box-shadow: none; }
+        10% { background: #00ffcc; box-shadow: 0 0 30px #00ffcc; transform: translateX(-50%) scaleX(3); }
+        30% { background: #fff; box-shadow: 0 0 50px #fff, 0 0 20px #bc3a80; }
+        50% { background: #00ffcc; transform: translateX(-50%) scaleX(1) skewX(-10deg); }
+        100% { background: transparent; }
+    }
+
+    #gate-container.gate-cracking .gate-crack {
+        animation: structuralFracture 0.4s steps(4) forwards;
+    }
+
+    @keyframes steamBust {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); filter: blur(0px); }
+        50% { opacity: 0.4; background: rgba(0, 255, 204, 0.2); filter: blur(8px); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(2.5); filter: blur(25px); }
+    }
+
+    #gate-container.gate-cracking .steam-vent {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: #fff;
+        z-index: 10002;
+        animation: steamBust 0.4s ease-out forwards;
+    }
+
+    #gate-container.gate-open .left-gate { transform: translateX(-110%); }
+    #gate-container.gate-open .right-gate { transform: translateX(110%); }
+
+    /* ==========================================================================
+       3. Tab Content Layouts
+       ========================================================================== */
+    .tab-content {
+        flex-grow: 1;
+        padding: 24px;
+        display: none;
+        border: 1px solid #622A50;
+        background: rgba(98, 42, 80, 0.03);
+        box-shadow: inset 0 0 20px rgba(98, 42, 80, 0.15);
+        margin: 20px 20px 80px 20px;
+    }
+
+    .active-tab {
+        display: block;
+    }
+
+    .tab-content h2 {
+        font-family: 'Silkscreen', sans-serif;
+        color: #fff;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       4. Navigation UI
+       ========================================================================== */
+    .tab-bar {
+        display: flex;
+        justify-content: space-around;
+        background-color: #111115; 
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        padding: 8px 0;
+        border-top: 2px solid #622A50;
+        box-shadow: 0 -4px 20px rgba(98, 42, 80, 0.3);
+        z-index: 10;
+    }
+
+    .tab-link {
+        font-family: 'Silkscreen', sans-serif;
+        flex-grow: 1;
+        text-align: center;
+        padding: 12px;
+        background-color: transparent;
+        color: #8a8a93;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 14px;
+        position: relative;
+        transition: all 0.2s steps(4);
+    }
+
+    .tab-link.active {
+        color: #ff52b9;
+        background: rgba(98, 42, 80, 0.2);
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(255, 82, 185, 0.6);
+    }
+
+    .tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 10%;
+        width: 80%;
+        height: 3px;
+        background-color: #ff52b9;
+        box-shadow: 0 0 8px #ff52b9;
+    }
+
+    .tab-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* ==========================================================================
+       5. Interactive Modules (Buttons, Inputs, Lists)
+       ========================================================================== */
+    .btn {
+        font-family: 'Silkscreen', sans-serif;
+        background-color: #622A50;
+        color: white;
+        padding: 16px;
+        border: 1px solid #bc3a80;
+        border-radius: 0px; 
+        cursor: pointer;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 1px;
+        box-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        margin-right: 10px;
+        margin-top: 10px;
+    }
+
+    .btn:hover {
+        background-color: #bc3a80;
+        box-shadow: 2px 2px 0px #00ffcc, 4px 4px 0px rgba(0,0,0,1);
+        transform: translate(-2px, -2px);
+    }
+
+    .btn:active {
+        box-shadow: 0px 0px 0px rgba(0,0,0,1);
+        transform: translate(2px, 2px);
+    }
+
+    input[type="text"] {
+        font-family: 'Share Tech Mono', monospace;
+        width: 100%;
+        padding: 14px;
+        margin-top: 8px;
+        background-color: #121218;
+        color: #00ffcc; 
+        border: 1px solid #622A50;
+        border-radius: 0px; 
+        box-sizing: border-box;
+        box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.3);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 18px;
+        color: #00ffcc;
+    }
+
+    li {
+        padding: 8px;
+        border-bottom: 1px dashed #333;
+    }
+
+    .balance-display {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #ff52b9;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. The Blast Gate System -->
+  <div id="gate-container" class="gate-hidden">
+    <div class="gate-half left-gate"><div class="status-light"></div></div>
+    <div class="gate-half right-gate"></div>
+    <div class="gate-crack"></div>
+    <div class="steam-vent"></div>
+  </div>
+
+  <!-- 2. Screen Content Elements -->
+  <!-- TAB 1: DASHBOARD / HOME -->
+  <div id="home" class="tab-content active-tab">
+    <h2>SYSTEM OVERVIEW</h2>
+    <div class="balance-display">CREDIT BALANCE: <span id="balance">0</span> COINS</div>
+    <p style="font-family: 'Share Tech Mono'; line-height: 1.6;">
+        Welcome to the Core Terminal. Complete standard processing missions to acquire sector currency. Use the lower navigation dock to deploy task modules.
+    </p>
+    <button id="clear-progress-btn" class="btn">PURGE SYSTEM DATA</button>
+  </div>
+
+  <!-- TAB 2: TASKS -->
+  <div id="tasks" class="tab-content">
+    <h2>OPERATIONAL TASKS</h2>
+    <button class="btn" onclick="completeTask(1)">RUN TASK 01 (Math)</button>
+    <button class="btn" onclick="completeTask(2)">RUN TASK 02 (Geography)</button>
+    <button class="btn" onclick="completeTask(3)">RUN TASK 03 (Random)</button>
+  </div>
+
+  <!-- TAB 3: HISTORY -->
+  <div id="history" class="tab-content">
+    <h2>TRANSACTION RECORD</h2>
+    <ul id="reward-history-list">
+      <!-- Dynamically filled list records -->
+    </ul>
+  </div>
+
+  <!-- 3. Bottom Tab Menu Links -->
+  <div class="tab-bar">
+    <button class="tab-link active" onclick="openTab(event, 'home')">DASHBOARD</button>
+    <button class="tab-link" onclick="openTab(event, 'tasks')">TASKS</button>
+    <button class="tab-link" onclick="openTab(event, 'history')">HISTORY</button>
+  </div>
+
+  <!-- 4. Operational Scripts -->
+  <script>
+    let balance = 0;
+    const rewardHistoryList = document.getElementById('reward-history-list');
+    const balanceElement = document.getElementById('balance');
+
+    const tasks = {
+        1: {
+            description: "Solve 5 + 3",
+            reward: 10,
+            complete: function () {
+                const answer = prompt("What is 5 + 3?");
+                return answer === '8';
+            }
+        },
+        2: {
+            description: "Answer: What is the capital of France?",
+            reward: 20,
+            complete: function () {
+                const answer = prompt("What is the capital of France?");
+                return answer.toLowerCase() === 'paris';
+            }
+        },
+        3: {
+            description: "Complete a random task",
+            reward: Math.floor(Math.random() * 20) + 1,
+            complete: function () {
+                alert("You completed a random task!");
+                return true;
+            }
+        }
+    };
+
+    function loadProgress() {
+        const savedBalance = localStorage.getItem('balance');
+        const savedHistory = localStorage.getItem('rewardHistory');
+
+        if (savedBalance !== null) {
+            balance = parseInt(savedBalance, 10);
+            balanceElement.textContent = balance;
+        }
+
+        if (savedHistory !== null) {
+            const rewardHistory = JSON.parse(savedHistory);
+            rewardHistoryList.innerHTML = ''; 
+            rewardHistory.forEach(reward => {
+                const rewardItem = document.createElement('li');
+                rewardItem.textContent = reward;
+                rewardHistoryList.appendChild(rewardItem);
+            });
+        }
+    }
+
+    function saveProgress() {
+        localStorage.setItem('balance', balance);
+        const rewardHistoryItems = Array.from(rewardHistoryList.children).map(item => item.textContent);
+        localStorage.setItem('rewardHistory', JSON.stringify(rewardHistoryItems));
+    }
+
+    function clearProgress() {
+        localStorage.removeItem('balance');
+        localStorage.removeItem('rewardHistory');
+        balance = 0;
+        balanceElement.textContent = balance;
+        rewardHistoryList.innerHTML = '';  
+        alert('Data cleared successfully.');
+    }
+
+    function completeTask(taskId) {
+        const task = tasks[taskId];
+        if (task && task.complete()) {
+            const reward = task.reward;
+            balance += reward;
+            balanceElement.textContent = balance;
+            
+            const rewardItem = document.createElement('li');
+            rewardItem.textContent = `Task ${taskId} verified. Earned +${reward} credits.`;
+            rewardHistoryList.appendChild(rewardItem);
+            
+            saveProgress();
+        } else {
+            alert("Verification Failed. Reward cancelled.");
+        }
+    }
+
+    // Advanced Blast Gate Switching Matrix
+    function openTab(event, tabId) {
+        const gateContainer = document.getElementById('gate-container');
+
+        // Slam doors down
+        gateContainer.className = 'gate-shut';
+
+        // Wait for pressure seal to hit structural fracture phase
+        setTimeout(() => {
+            gateContainer.classList.add('gate-cracking');
+            
+            // Swap viewports instantly behind closed partition walls
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active-tab'));
+
+            const tabLinks = document.querySelectorAll('.tab-link');
+            tabLinks.forEach(link => link.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active-tab');
+            event.currentTarget.classList.add('active');
+        }, 200);
+
+        // Vent steam hydraulics and draw partitions open
+        setTimeout(() => {
+            gateContainer.className = 'gate-open';
+        }, 650);
+    }
+
+    window.onload = function () {
+        loadProgress();
+    };
+
+    document.getElementById('clear-progress-btn').addEventListener('click', clearProgress);
+  </script>
+</body>
+</html>
